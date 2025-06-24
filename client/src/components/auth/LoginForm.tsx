@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { loginUser, clearError } from '../../redux/userSlice';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { validateEmail, validatePassword } from '../../utils/auth';
 
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -39,6 +40,15 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Frontend validation
+    if (!validateEmail(formData.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    if (!validatePassword(formData.password)) {
+      alert('Password must be at least 8 characters, include a letter, a number, and a symbol.');
+      return;
+    }
     dispatch(loginUser(formData));
   };
 

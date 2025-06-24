@@ -4,7 +4,8 @@ export const validateEmail = (email: string): boolean => {
 };
 
 export const validatePassword = (password: string): boolean => {
-  return password.length >= 6;
+  // At least 8 chars, 1 letter, 1 number, 1 symbol
+  return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
 };
 
 export const generateId = (): string => {
@@ -20,7 +21,7 @@ export const mockLogin = async (email: string, password: string): Promise<{ succ
   }
   
   if (!validatePassword(password)) {
-    return { success: false, error: 'Password must be at least 6 characters' };
+    return { success: false, error: 'Password must be at least 8 characters, and include at least 1 letter, 1 number, and 1 symbol' };
   }
   
   return {

@@ -62,7 +62,7 @@ const SignupForm: React.FC = () => {
     }
 
     if (!validatePassword(formData.password)) {
-      newErrors.password = 'Password must be at least 6 characters long';
+      newErrors.password = 'Password must be at least 8 characters, include a letter, a number, and a symbol.';
     }
 
     if (formData.password !== formData.confirmPassword) {

@@ -9,8 +9,8 @@ import CTA from '../components/home/CTA';
 const Home: React.FC = () => {
   const isAuthenticated = useAppSelector(state => state.user.isAuthenticated);
   const userLoading = useAppSelector(state => state.user.loading);
-  const invoiceLoading = useAppSelector(state => state.invoices.loading);
-  const expenseLoading = useAppSelector(state => state.expenses.loading);
+  const invoiceLoading = useAppSelector(state => (state.invoices as any).loading);
+  const expenseLoading = useAppSelector(state => (state.expenses as any).loading);
   const loading = userLoading || invoiceLoading || expenseLoading;
   return (
     <>
