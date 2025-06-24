@@ -1,0 +1,39 @@
+# Node
+node_modules/
+
+# Build output
+/dist/
+/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+server/config.env
+client/.env
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Misc
+coverage/
+*.log
+
+# Ignore local dev data
+*.local
+
+# Ignore generated files
+client/src/utils/pdfGenerator.ts 
