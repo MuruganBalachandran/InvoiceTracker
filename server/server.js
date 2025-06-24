@@ -22,9 +22,12 @@ connectDB();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-service-name.onrender.com'] // <-- Set your Render frontend URL here
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [
+    'https://invoicetracker-client.onrender.com', // <-- Replace with your actual frontend Render URL
+    'https://invoicetracker.onrender.com/',           // <-- Add your Vercel frontend URL if you use Vercel
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
   credentials: true
 }));
 app.use(morgan('dev'));

@@ -11,8 +11,54 @@ import {
   updateInvoiceStatus,
   getInvoiceStats
 } from '../controllers/invoiceController.js';
+import Client from '../models/Client.js';
+import Expense from '../models/Expense.js';
+import User from '../models/User.js';
 
 const router = express.Router();
+
+// Public route for testing: GET /api/invoices/public
+router.get('/public', async (req, res) => {
+  try {
+    // Optionally, you can limit the number of invoices returned for public view
+    const invoices = await getInvoices(req, res, true); // Pass a flag if you want to handle differently in controller
+    // If your controller sends the response, you may need to fetch directly from the model here instead
+    // For now, just send a placeholder response
+    res.json({ success: true, message: 'Public invoices route is working!' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// Public route for clients
+router.get('/public-clients', async (req, res) => {
+  try {
+    const clients = await Client.find().limit(5).select('-__v');
+    res.json({ success: true, data: clients });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// Public route for expenses
+router.get('/public-expenses', async (req, res) => {
+  try {
+    const expenses = await Expense.find().limit(5).select('-__v');
+    res.json({ success: true, data: expenses });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// Public route for users (basic info only)
+router.get('/public-users', async (req, res) => {
+  try {
+    const users = await User.find().limit(5).select('name email');
+    res.json({ success: true, data: users });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
 
 // All routes are protected
 router.use(protect);
@@ -98,4 +144,4 @@ router.put('/:id', updateInvoiceValidation, handleValidationErrors, updateInvoic
 router.delete('/:id', deleteInvoice);
 router.patch('/:id/status', statusValidation, handleValidationErrors, updateInvoiceStatus);
 
-export default router; 
+export default router;
