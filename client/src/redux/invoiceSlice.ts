@@ -5,11 +5,13 @@ import api from '../services/api';
 interface InvoiceState {
   invoices: Invoice[];
   clients: Client[];
+  loading: boolean;
 }
 
 const initialState: InvoiceState = {
   invoices: [],
   clients: [],
+  loading: false,
 };
 
 // Types for thunks
@@ -166,33 +168,54 @@ const invoiceSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchInvoices.pending, (state) => { state.loading = true; })
       .addCase(fetchInvoices.fulfilled, (state, action) => {
         state.invoices = action.payload || [];
+        state.loading = false;
       })
+      .addCase(fetchInvoices.rejected, (state) => { state.loading = false; })
+      .addCase(fetchClients.pending, (state) => { state.loading = true; })
       .addCase(fetchClients.fulfilled, (state, action) => {
         state.clients = action.payload || [];
+        state.loading = false;
       })
+      .addCase(fetchClients.rejected, (state) => { state.loading = false; })
+      .addCase(createInvoice.pending, (state) => { state.loading = true; })
       .addCase(createInvoice.fulfilled, (state, action) => {
         if (action.payload) state.invoices.push({ ...action.payload, id: typeof action.payload.id === 'string' ? action.payload.id : (typeof action.payload._id === 'string' ? action.payload._id : Math.random().toString(36).slice(2)) });
+        state.loading = false;
       })
+      .addCase(createInvoice.rejected, (state) => { state.loading = false; })
+      .addCase(updateInvoiceAsync.pending, (state) => { state.loading = true; })
       .addCase(updateInvoiceAsync.fulfilled, (state, action) => {
         const index = state.invoices.findIndex(inv => inv.id === action.payload.id);
         if (index !== -1) {
           state.invoices[index] = action.payload;
         }
+        state.loading = false;
       })
+      .addCase(updateInvoiceAsync.rejected, (state) => { state.loading = false; })
+      .addCase(deleteInvoiceAsync.pending, (state) => { state.loading = true; })
       .addCase(deleteInvoiceAsync.fulfilled, (state, action) => {
         state.invoices = state.invoices.filter(inv => inv.id !== action.payload);
+        state.loading = false;
       })
+      .addCase(deleteInvoiceAsync.rejected, (state) => { state.loading = false; })
+      .addCase(createClient.pending, (state) => { state.loading = true; })
       .addCase(createClient.fulfilled, (state, action) => {
         if (action.payload) state.clients.push({ ...action.payload, id: typeof action.payload.id === 'string' ? action.payload.id : (typeof action.payload._id === 'string' ? action.payload._id : Math.random().toString(36).slice(2)) });
+        state.loading = false;
       })
+      .addCase(createClient.rejected, (state) => { state.loading = false; })
+      .addCase(updateInvoiceStatusAsync.pending, (state) => { state.loading = true; })
       .addCase(updateInvoiceStatusAsync.fulfilled, (state, action) => {
         const index = state.invoices.findIndex(inv => inv.id === action.payload.id);
         if (index !== -1) {
           state.invoices[index] = action.payload;
         }
-      });
+        state.loading = false;
+      })
+      .addCase(updateInvoiceStatusAsync.rejected, (state) => { state.loading = false; });
   },
 });
 

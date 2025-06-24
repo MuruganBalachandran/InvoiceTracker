@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, Users, TrendingUp, Sparkles, Zap, Shield } from 'lucide-react';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  isAuthenticated?: boolean;
+}
+
+const Hero: React.FC<HeroProps> = ({ isAuthenticated }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -140,17 +144,20 @@ const Hero: React.FC = () => {
             variants={itemVariants}
             className="flex flex-col sm:flex-row gap-6 mb-16 justify-center"
           >
-            <Link to="/signup">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group bg-white text-gray-900 px-10 py-5 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-2xl flex items-center gap-3 pulse-glow"
-              >
-                <Zap className="w-6 h-6 text-indigo-600" />
-                Get Started Free
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
-              </motion.button>
-            </Link>
+            {/* Only show signup button if not authenticated */}
+            {!isAuthenticated && (
+              <Link to="/signup">
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group bg-white text-gray-900 px-10 py-5 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-2xl flex items-center gap-3 pulse-glow"
+                >
+                  <Zap className="w-6 h-6 text-indigo-600" />
+                  Get Started Free
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                </motion.button>
+              </Link>
+            )}
             <motion.button
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}

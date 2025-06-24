@@ -66,11 +66,13 @@ export const deleteExpenseAsync = createAsyncThunk<string, string, { rejectValue
 interface ExpenseState {
   expenses: Expense[];
   monthlySalary: number;
+  loading: boolean;
 }
 
 const initialState: ExpenseState = {
   expenses: [],
   monthlySalary: 5000, // Default salary for demo
+  loading: false,
 };
 
 const expenseSlice = createSlice({
@@ -95,21 +97,33 @@ const expenseSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchExpenses.pending, (state) => { state.loading = true; })
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.expenses = action.payload || [];
+        state.loading = false;
       })
+      .addCase(fetchExpenses.rejected, (state) => { state.loading = false; })
+      .addCase(createExpense.pending, (state) => { state.loading = true; })
       .addCase(createExpense.fulfilled, (state, action) => {
         if (action.payload) state.expenses.push({ ...action.payload, id: typeof action.payload.id === 'string' ? action.payload.id : (typeof action.payload._id === 'string' ? action.payload._id : Math.random().toString(36).slice(2)) });
+        state.loading = false;
       })
+      .addCase(createExpense.rejected, (state) => { state.loading = false; })
+      .addCase(updateExpenseAsync.pending, (state) => { state.loading = true; })
       .addCase(updateExpenseAsync.fulfilled, (state, action) => {
         const index = state.expenses.findIndex(exp => exp.id === action.payload.id);
         if (index !== -1) {
           state.expenses[index] = action.payload;
         }
+        state.loading = false;
       })
+      .addCase(updateExpenseAsync.rejected, (state) => { state.loading = false; })
+      .addCase(deleteExpenseAsync.pending, (state) => { state.loading = true; })
       .addCase(deleteExpenseAsync.fulfilled, (state, action) => {
         state.expenses = state.expenses.filter(exp => exp.id !== action.payload);
-      });
+        state.loading = false;
+      })
+      .addCase(deleteExpenseAsync.rejected, (state) => { state.loading = false; });
   },
 });
 

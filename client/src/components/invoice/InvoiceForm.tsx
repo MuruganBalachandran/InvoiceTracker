@@ -55,6 +55,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, initialData, onSubmi
   });
 
   const [showNewClientForm, setShowNewClientForm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
     dispatch(fetchClients());
@@ -110,47 +111,58 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, initialData, onSubmi
       alert('Client email is required.');
       return;
     }
-    // Simple email format check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newClient.email)) {
       alert('Please enter a valid email address.');
       return;
     }
+    setLoading(true);
     const client = {
       name: newClient.name,
       email: newClient.email,
       phone: newClient.phone,
       address: newClient.address,
     };
-    console.log('Creating client with payload:', client);
-    const result = await dispatch(createClient(client));
-    if (createClient.fulfilled.match(result)) {
-      const created = result.payload as any;
-      setFormData(prev => ({
-        ...prev,
-        clientId: created.id || created._id,
-        clientName: created.name || newClient.name,
-      }));
-      // Optionally, refresh client list if you have a fetchClients thunk
-      // await dispatch(fetchClients());
-    } else {
-      alert(result.payload || 'Failed to add client.');
-      return;
+    try {
+      const result = await dispatch(createClient(client));
+      if (createClient.fulfilled.match(result)) {
+        const created = result.payload as any;
+        setFormData(prev => ({
+          ...prev,
+          clientId: created.id || created._id,
+          clientName: created.name || newClient.name,
+        }));
+      } else {
+        alert(result.payload || 'Failed to add client.');
+        setLoading(false);
+        return;
+      }
+      setShowNewClientForm(false);
+      setNewClient({ name: '', email: '', phone: '', address: '' });
+    } finally {
+      setLoading(false);
     }
-    setShowNewClientForm(false);
-    setNewClient({ name: '', email: '', phone: '', address: '' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     // Defensive check for valid MongoDB ObjectId
     if (!/^[a-f\d]{24}$/i.test(formData.clientId)) {
       alert('Please select a valid client.');
       return;
     }
-
-
+    if (!formData.invoiceNumber.trim()) {
+      alert('Invoice number is required.');
+      return;
+    }
+    if (!formData.issueDate) {
+      alert('Issue date is required.');
+      return;
+    }
+    if (!formData.dueDate) {
+      alert('Due date is required.');
+      return;
+    }
     if (!formData.items.length || formData.items.some((item: InvoiceItem) => !item.description || item.quantity <= 0 || item.rate < 0)) {
       alert('Please add at least one valid item.');
       return;
@@ -170,20 +182,26 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, initialData, onSubmi
       notes: formData.notes,
       status: formData.status || 'draft',
     };
-    if (onSubmit) {
-      await onSubmit(isEdit ? { ...invoice, id: initialData?.id } : invoice);
-    } else {
-      if (isEdit && initialData?.id) {
-        await dispatch(updateInvoiceAsync({ id: initialData.id, invoiceData: invoice }));
+    setLoading(true);
+    try {
+      if (onSubmit) {
+        await onSubmit(isEdit ? { ...invoice, id: initialData?.id } : invoice);
       } else {
-        const result = await dispatch(createInvoice(invoice));
-        if (createInvoice.rejected.match(result)) {
-          alert(result.payload || 'Failed to create invoice. Check required fields.');
-          return;
+        if (isEdit && initialData?.id) {
+          await dispatch(updateInvoiceAsync({ id: initialData.id, invoiceData: invoice }));
+        } else {
+          const result = await dispatch(createInvoice(invoice));
+          if (createInvoice.rejected.match(result)) {
+            alert(result.payload || 'Failed to create invoice. Check required fields.');
+            setLoading(false);
+            return;
+          }
         }
       }
+      onClose();
+    } finally {
+      setLoading(false);
     }
-    onClose();
   };
 
   const subtotal = formData.items.reduce((sum: number, item: InvoiceItem) => sum + item.amount, 0);
@@ -218,6 +236,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, initialData, onSubmi
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {loading && (
+            <div className="flex justify-center items-center mb-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
+              <span className="ml-2 text-primary-600">Processing...</span>
+            </div>
+          )}
           {/* Client Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

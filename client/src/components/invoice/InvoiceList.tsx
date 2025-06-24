@@ -7,6 +7,7 @@ import { FileText, Eye, Edit, Trash2, Download, MoreVertical, CheckCircle, Clock
 import InvoiceForm from './InvoiceForm';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { generateInvoicePDF } from '../../utils/pdfGenerator.tsx';
+import { Invoice } from '../../redux/types';
 
 const InvoiceList: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -15,7 +16,7 @@ const InvoiceList: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'draft' | 'sent' | 'paid' | 'overdue'>('all');
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
-  const filteredInvoices = invoices.filter(invoice => {
+  const filteredInvoices = invoices.filter((invoice: Invoice) => {
     if (filter === 'all') return true;
     return invoice.status === filter;
   });
@@ -114,7 +115,7 @@ const InvoiceList: React.FC = () => {
       >
         <AnimatePresence>
           {filteredInvoices.length > 0 ? (
-            filteredInvoices.map((invoice) => (
+            filteredInvoices.map((invoice: Invoice) => (
               <motion.div
                 key={invoice.id}
                 variants={itemVariants}
@@ -171,7 +172,7 @@ const InvoiceList: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.95, y: -10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-10"
+                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                           >
                             <div className="py-2">
                               <button className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -182,12 +183,13 @@ const InvoiceList: React.FC = () => {
                                 <Edit className="h-4 w-4" />
                                 <span>Edit</span>
                               </button>
+                              {/* @ts-expect-error PDFDownloadLink children typing issue */}
                               <PDFDownloadLink
                                 document={generateInvoicePDF(invoice, invoice.clientName)}
                                 fileName={`Invoice-${invoice.invoiceNumber}.pdf`}
                                 className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               >
-                                {({ loading }) => (
+                                {({ loading }: { loading: boolean }) => (
                                   <>
                                     <Download className="h-4 w-4" />
                                     <span>{loading ? 'Preparing PDF...' : 'Download PDF'}</span>
@@ -201,7 +203,7 @@ const InvoiceList: React.FC = () => {
                                   {['draft', 'sent', 'paid', 'overdue'].map((status) => (
                                     <button
                                       key={status}
-                                      onClick={() => handleStatusChange(invoice.id, status)}
+                                      onMouseDown={e => { e.preventDefault(); handleStatusChange(invoice.id, status); }}
                                       className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
                                         invoice.status === status
                                           ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'

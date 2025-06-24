@@ -32,6 +32,8 @@ const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onClose, initialData, o
     };
   });
 
+  const [loading, setLoading] = useState(false);
+
   const categories = [
     'Office Supplies',
     'Travel',
@@ -42,6 +44,17 @@ const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onClose, initialData, o
     'Equipment',
     'Utilities',
     'Insurance',
+    'Rent',
+    'Maintenance',
+    'Education',
+    'Healthcare',
+    'Transportation',
+    'Groceries',
+    'Food',
+    'Gifts & Donations',
+    'Taxes',
+    'Bank Fees',
+    'Legal',
     'Other',
   ];
 
@@ -54,20 +67,42 @@ const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onClose, initialData, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const expense = {
-      description: formData.description,
-      amount: parseFloat(formData.amount),
-      category: formData.category,
-      date: formData.date,
-      createdAt: initialData?.createdAt || new Date().toISOString(),
-    };
-    if (onSubmit) {
-      await onSubmit({ ...expense, id: initialData?.id });
-    } else {
-      await dispatch(createExpense(expense));
+    setLoading(true);
+    try {
+      if (!formData.description.trim()) {
+        alert('Description is required.');
+        return;
+      }
+      if (!formData.amount || isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
+        alert('Please enter a valid amount.');
+        return;
+      }
+      if (!formData.category) {
+        alert('Category is required.');
+        return;
+      }
+      if (!formData.date) {
+        alert('Date is required.');
+        return;
+      }
+      const expense = {
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        date: formData.date,
+        createdAt: initialData?.createdAt || new Date().toISOString(),
+      };
+      if (onSubmit) {
+        await onSubmit({ ...expense, id: initialData?.id });
+      } else {
+        await dispatch(createExpense(expense));
+      }
+      onClose();
+    } catch (err: any) {
+      alert(err.message || 'An error occurred while saving the expense.');
+    } finally {
+      setLoading(false);
     }
-    onClose();
   };
 
   return (
@@ -189,9 +224,10 @@ const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onClose, initialData, o
               whileTap={{ scale: 0.98 }}
               type="submit"
               className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              disabled={loading}
             >
-              <Save className="h-4 w-4" />
-              <span>{isEdit ? 'Save Changes' : 'Add Expense'}</span>
+              {loading ? <span className="loader mr-2"></span> : <Save className="h-4 w-4" />}
+              <span>{loading ? 'Saving...' : (isEdit ? 'Save Changes' : 'Add Expense')}</span>
             </motion.button>
           </div>
         </form>
@@ -201,3 +237,7 @@ const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onClose, initialData, o
 };
 
 export default AddExpenseForm;
+
+<style>
+{`.loader { border: 2px solid #f3f3f3; border-top: 2px solid #e53e3e; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
+</style>
