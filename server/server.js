@@ -23,10 +23,10 @@ connectDB();
 app.use(helmet());
 app.use(cors({
   origin: [
-    'https://invoicetracker-client.onrender.com', // <-- Replace with your actual frontend Render URL
-    'https://invoicetracker.onrender.com/',           // <-- Add your Vercel frontend URL if you use Vercel
-    'http://localhost:5173',
-    'http://localhost:3000'
+    'https://invoicetracker.onrender.com', // removed trailing slash
+    'http://localhost:5173',              // local dev (Vite)
+    'http://localhost:3000'               // local dev (React default)
+    // Add any other deployed frontend URLs here, e.g. Vercel or Netlify
   ],
   credentials: true
 }));
